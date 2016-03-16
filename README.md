@@ -1,7 +1,7 @@
-# spo-mmsimport
+# SharePoint Online - Managed Metadata Import Utility
 Simple console application for importing terms with custom properties into the Managed Metadata store in SharePoint Online/O365.
 
-## Please Note
+### Please Note
 This is an extremely simple utility in its design and development. There are many things it does not do. It may be expanded in the future with additional capabilities but at this time it is in a fairly rudimentary state.
 
 # Usage
@@ -17,12 +17,12 @@ Given that input, the utility will create terms in the term store using the Term
 * Product A (Custom1 = Foo, Custom2 = Bar, CustomN = Baz)
 * Product B (Custom1 = Abc, Custom2 = Def, CustomN = Ghi)
 
-## Example
+### Example
 ```
 SPOMMSImport.exe -f c:\myterms.csv --url https://mycompany.sharepoint.com/sites/mysite -u foo@mycompany.com -p 12345 --termGroup "Company Terms" --termSet "Products"
 ```
 
-## Arguments
+### Arguments
 The utility expects the following arguments:
 
 ```
@@ -41,3 +41,11 @@ The utility expects the following arguments:
 
   -s, --termSet      Required. Term set to import terms into.
 ```
+
+# Limitations
+Currently the utility does not support the following:
+
+* Nested terms - in the future this utility should be expanded to support a CSV format identical to the one you can upload through the web UI which supports nesting and some additional properties.
+* Updating existing terms with new properties - currently if a term already exists it will be skipped
+* Removing of existing terms (e.g. if the data file should consist of the entire set of terms, the utility will not remove terms in the term store that are not in the data file)
+* Better performance - there are many operations that could be batched together to improve performance
