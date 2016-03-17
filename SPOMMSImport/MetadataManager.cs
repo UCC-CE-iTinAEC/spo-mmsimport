@@ -6,12 +6,12 @@ using System.Linq;
 
 namespace SPOMMSImport
 {
-    public class MetadataImporter
+    public class MetadataManager
     {
         private readonly ClientContext _ctx;
         private readonly TermStore _ts;
 
-        public MetadataImporter(ClientContext ctx, string termStore) {
+        public MetadataManager(ClientContext ctx, string termStore) {
             var session = TaxonomySession.GetTaxonomySession(ctx);
             _ctx = ctx;
 
@@ -32,24 +32,7 @@ namespace SPOMMSImport
         }
 
         public void ImportTerms(string termGroup, string termSet, IEnumerable<TermData> terms) {
-            // get group
-            var groups = _ts.Groups;
-            _ctx.Load(groups);
-            _ctx.ExecuteQuery();
-
-            var group = groups.FirstOrDefault(x => x.Name == termGroup);
-            if (group == null) {
-                throw new Exception("Could not find term group " + termGroup);
-            }
-            var sets = group.TermSets;
-            _ctx.Load(sets);
-            _ctx.ExecuteQuery();
-
-            // get set
-            var set = sets.FirstOrDefault(x => x.Name == termSet);
-            if (set == null) {
-                throw new Exception("Could not find term set " + termSet);
-            }
+            var set = getTermSet(termGroup, termSet);
 
             var termNames = loadAllTermNamesInSet(set);
             foreach (var term in terms) {
@@ -70,6 +53,43 @@ namespace SPOMMSImport
 
                 Console.WriteLine("Done");
             }
+        }
+
+        public void ClearTerms(string termGroup, string termSet) {
+            var set = getTermSet(termGroup, termSet);
+            var terms = set.GetAllTerms();
+            _ctx.Load(terms);
+            _ctx.ExecuteQuery();
+
+            foreach (var term in terms) {
+                Console.Write("Deleting {0} ... ", term.Name);
+                term.DeleteObject();
+                _ctx.ExecuteQuery();
+                Console.WriteLine("Done");
+            }
+        }
+
+        private TermSet getTermSet(string termGroup, string termSet) {
+            // get group
+            var groups = _ts.Groups;
+            _ctx.Load(groups);
+            _ctx.ExecuteQuery();
+
+            var group = groups.FirstOrDefault(x => x.Name == termGroup);
+            if (group == null) {
+                throw new Exception("Could not find term group " + termGroup);
+            }
+            var sets = group.TermSets;
+            _ctx.Load(sets);
+            _ctx.ExecuteQuery();
+
+            // get set
+            var set = sets.FirstOrDefault(x => x.Name == termSet);
+            if (set == null) {
+                throw new Exception("Could not find term set " + termSet);
+            }
+
+            return set;
         }
 
         private IList<string> loadAllTermNamesInSet(TermSet set) {
